@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace LaravelGtm\HubspotSdk\Responses;
 
-readonly class ListDealsResponse
+readonly class ListDealsResponse implements \JsonSerializable
 {
     /**
      * @param  list<Deal>  $results
@@ -13,6 +13,17 @@ readonly class ListDealsResponse
         public array $results,
         public Paging $paging,
     ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'results' => $this->results,
+            'paging' => $this->paging,
+        ];
+    }
 
     /**
      * @param  array{results: list<array<string, mixed>>, paging?: array<string, mixed>|null}  $data

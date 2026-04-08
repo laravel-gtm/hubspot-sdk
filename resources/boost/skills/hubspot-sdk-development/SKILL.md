@@ -1,5 +1,5 @@
 ---
-name: saloon-api-sdk-boilerplate-development
+name: hubspot-sdk-development
 description: Build and extend the Saloon API SDK package — connector, requests, responses, Laravel integration, and tests.
 ---
 
@@ -7,39 +7,39 @@ description: Build and extend the Saloon API SDK package — connector, requests
 
 ## When to use this skill
 
-Use this skill when working in the `your-vendor/saloon-api-sdk-boilerplate` package: adding endpoints, request/response types, Laravel wiring, or tests. This is a **Saloon 4** HTTP client template, not a specific API — replace the example `ping()` / `ExampleGetRequest` with real routes for your service.
+Use this skill when working in the `laravel-gtm/hubspot-sdk` package: adding endpoints, request/response types, Laravel wiring, or tests. This is a **Saloon 4** HTTP client template, not a specific API — replace the example `ping()` / `ExampleGetRequest` with real routes for your service.
 
 ## SDK entry point
 
-Inject `SaloonApiSdk` or use the static factory:
+Inject `HubspotSdk` or use the static factory:
 
 ```php
-use YourVendor\SaloonApiSdk\SaloonApiSdk;
+use LaravelGtm\HubspotSdk\HubspotSdk;
 
 // Via Laravel container (recommended)
-$sdk = app(SaloonApiSdk::class);
+$sdk = app(HubspotSdk::class);
 
 // Standalone
-$sdk = SaloonApiSdk::make(
-    baseUrl: 'https://api.example.com',
+$sdk = HubspotSdk::make(
+    baseUrl: 'claude',
     token: 'your-token',
 );
 ```
 
 ## Connector
 
-`SaloonConnector` resolves the base URL, default headers, optional `HeaderAuthenticator`, timeouts, and rate-limit plugin storage. Register or construct it consistently with your config/env keys (`SALOON_API_SDK_*` before running the init script).
+`HubspotConnector` resolves the base URL, default headers, optional `HeaderAuthenticator`, timeouts, and rate-limit plugin storage. Register or construct it consistently with your config/env keys (`HUBSPOT_*` before running the init script).
 
 ## Requests and responses
 
 - One **request class per endpoint**, under `src/Requests/`, extending `Saloon\Http\Request`.
 - **Response DTOs** under `src/Responses/` with typed properties and `fromArray()` where useful.
-- Add public methods on `SaloonApiSdk` that delegate to `$this->connector->send()` and return DTOs.
+- Add public methods on `HubspotSdk` that delegate to `$this->connector->send()` and return DTOs.
 
 Example (template):
 
 ```php
-// src/SaloonApiSdk.php — ping() sends ExampleGetRequest
+// src/HubspotSdk.php — ping() sends ExampleGetRequest
 public function ping(): Response
 {
     return $this->connector->send(new ExampleGetRequest);
@@ -48,7 +48,7 @@ public function ping(): Response
 
 ## Laravel
 
-The service provider merges config from `config/saloon-api-sdk-boilerplate.php`, binds the connector and SDK as singletons, and publishes the config with tag `saloon-api-sdk-boilerplate-config`. After customization, align env names with your chosen prefix.
+The service provider merges config from `config/hubspot-sdk.php`, binds the connector and SDK as singletons, and publishes the config with tag `hubspot-sdk-config`. After customization, align env names with your chosen prefix.
 
 ## Rate limiting
 
@@ -61,7 +61,7 @@ Use Saloon fakes — never hit production APIs in tests:
 ```php
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
-use YourVendor\SaloonApiSdk\Requests\ExampleGetRequest;
+use LaravelGtm\HubspotSdk\Requests\ExampleGetRequest;
 
 $mockClient = new MockClient([
     ExampleGetRequest::class => MockResponse::make(['status' => 'ok']),
@@ -81,4 +81,4 @@ The test suite uses Pest + Orchestra Testbench; see `tests/` and `phpunit.xml.di
 
 ## Init script
 
-New repos from the GitHub template should run `./init-saloon-sdk.sh` once to replace `your-vendor`, `saloon-api-sdk-boilerplate`, class names, and env prefixes. That updates this skill path and frontmatter to match the package slug.
+New repos from the GitHub template should run `./init-saloon-sdk.sh` once to replace `laravel-gtm`, `hubspot-sdk`, class names, and env prefixes. That updates this skill path and frontmatter to match the package slug.

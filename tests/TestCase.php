@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace YourVendor\SaloonApiSdk\Tests;
+namespace LaravelGtm\HubspotSdk\Tests;
 
+use LaravelGtm\HubspotSdk\Laravel\HubspotServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
-use YourVendor\SaloonApiSdk\Laravel\SaloonApiSdkServiceProvider;
 
 abstract class TestCase extends BaseTestCase
 {
     protected function getPackageProviders($app): array
     {
-        return [SaloonApiSdkServiceProvider::class];
+        return [HubspotServiceProvider::class];
     }
 }

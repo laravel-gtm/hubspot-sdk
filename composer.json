@@ -1,5 +1,5 @@
 {
-    "name": "your-vendor/saloon-api-sdk-boilerplate",
+    "name": "laravel-gtm/hubspot-sdk",
     "description": "Laravel-ready PHP API SDK boilerplate built with Saloon (template repository).",
     "type": "library",
     "license": "MIT",
@@ -19,12 +19,12 @@
     },
     "autoload": {
         "psr-4": {
-            "YourVendor\\SaloonApiSdk\\": "src/"
+            "LaravelGtm\\HubspotSdk\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "YourVendor\\SaloonApiSdk\\Tests\\": "tests/"
+            "LaravelGtm\\HubspotSdk\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -42,7 +42,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "YourVendor\\SaloonApiSdk\\Laravel\\SaloonApiSdkServiceProvider"
+                "LaravelGtm\\HubspotSdk\\Laravel\\HubspotServiceProvider"
             ]
         }
     },

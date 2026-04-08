@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use LaravelGtm\HubspotSdk\Tests\TestCase;
 use Saloon\Config;
-use YourVendor\SaloonApiSdk\Tests\TestCase;
 
 Config::preventStrayRequests();
 

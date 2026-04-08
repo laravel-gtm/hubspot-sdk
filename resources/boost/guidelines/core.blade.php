@@ -1,28 +1,28 @@
-## Saloon API SDK (`your-vendor/saloon-api-sdk-boilerplate`)
+## Saloon API SDK (`laravel-gtm/hubspot-sdk`)
 
 This package is a **Laravel-ready PHP API client** built on [Saloon](https://docs.saloon.dev/) v4: a connector, optional rate limiting, typed request classes, and response DTOs. Replace the template `ExampleGetRequest` / `ping()` flow with real endpoints for your API.
 
 ### Setup
 
-Add credentials to `.env` using your package’s env prefix (before init: `SALOON_API_SDK_*`):
+Add credentials to `.env` using your package’s env prefix (before init: `HUBSPOT_*`):
 
 ```
-SALOON_API_SDK_TOKEN=your-token-here
-SALOON_API_SDK_BASE_URL=https://api.example.com
+HUBSPOT_TOKEN=your-token-here
+HUBSPOT_BASE_URL=claude
 ```
 
 Publish the config when you need to customize defaults:
 
 ```bash
-php artisan vendor:publish --tag=saloon-api-sdk-boilerplate-config
+php artisan vendor:publish --tag=hubspot-sdk-config
 ```
 
 ### Usage
 
-- **`SaloonApiSdk`** is the main entry point. Inject it via the Laravel container or use `SaloonApiSdk::make()` for standalone use.
-- **`SaloonConnector`** holds base URL, auth headers, timeouts, and rate-limit storage.
+- **`HubspotSdk`** is the main entry point. Inject it via the Laravel container or use `HubspotSdk::make()` for standalone use.
+- **`HubspotConnector`** holds base URL, auth headers, timeouts, and rate-limit storage.
 - Add **request classes** under `src/Requests/` (one per endpoint) and **response DTOs** under `src/Responses/`.
-- Expose API operations as methods on `SaloonApiSdk` (or future `Resources/*` classes).
+- Expose API operations as methods on `HubspotSdk` (or future `Resources/*` classes).
 
 ### Request pattern
 
@@ -30,9 +30,9 @@ Use Saloon request classes extending `Saloon\Http\Request`. Pass parameters via 
 
 @verbatim
 <code-snippet name="Calling the template ping endpoint" lang="php">
-use YourVendor\SaloonApiSdk\SaloonApiSdk;
+use LaravelGtm\HubspotSdk\HubspotSdk;
 
-$sdk = app(SaloonApiSdk::class);
+$sdk = app(HubspotSdk::class);
 
 $sdk->ping();
 </code-snippet>
@@ -46,7 +46,7 @@ Use Saloon’s `MockClient` and `MockResponse`. Never make real API calls in aut
 <code-snippet name="Mocking HTTP calls" lang="php">
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
-use YourVendor\SaloonApiSdk\Requests\ExampleGetRequest;
+use LaravelGtm\HubspotSdk\Requests\ExampleGetRequest;
 
 $mockClient = new MockClient([
     ExampleGetRequest::class => MockResponse::make(['ok' => true]),

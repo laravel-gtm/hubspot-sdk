@@ -482,7 +482,7 @@ class GetStatusRequest extends SoloRequest
 
     public function resolveEndpoint(): string
     {
-        return 'https://api.example.com/status';
+        return 'claude/status';
     }
 }
 

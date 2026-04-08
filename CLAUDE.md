@@ -27,20 +27,20 @@ If `composer lint` fails, run `composer format` and rerun `composer lint`.
 This is a **Laravel package**: a Saloon 4 HTTP SDK with an optional Laravel service provider.
 
 ```
-SaloonApiSdk → SaloonConnector → Request classes → Response DTOs
+HubspotSdk → HubspotConnector → Request classes → Response DTOs
 ```
 
-- **`SaloonConnector`** — Base URL, JSON headers, optional `HeaderAuthenticator` (configurable header name), rate limits, timeouts.
-- **`SaloonApiSdk`** — Public entrypoint; `make()` for standalone use; add methods that send requests and return DTOs.
+- **`HubspotConnector`** — Base URL, JSON headers, optional `HeaderAuthenticator` (configurable header name), rate limits, timeouts.
+- **`HubspotSdk`** — Public entrypoint; `make()` for standalone use; add methods that send requests and return DTOs.
 - **`src/Requests/`** — One class per endpoint, extending `Saloon\Http\Request`.
 - **`src/Responses/`** — DTOs with `fromArray()` (or Saloon DTOs) as appropriate.
-- **`src/Laravel/SaloonApiSdkServiceProvider`** — Binds connector and SDK; publishes config (see README for publish tag after the one-time `./init-saloon-sdk.sh`, which deletes itself when it finishes successfully).
+- **`src/Laravel/HubspotServiceProvider`** — Binds connector and SDK; publishes config (see README for publish tag after the one-time `./init-saloon-sdk.sh`, which deletes itself when it finishes successfully).
 
 ## Adding an endpoint
 
 1. Add a `Request` under `src/Requests/`.
 2. Add a response type under `src/Responses/` if needed.
-3. Expose a method on `SaloonApiSdk` (or a future `Resources/*` class) that sends the request and returns the DTO.
+3. Expose a method on `HubspotSdk` (or a future `Resources/*` class) that sends the request and returns the DTO.
 4. Cover with `MockClient` / `MockResponse` in tests. `tests/Pest.php` enables `Config::preventStrayRequests()`.
 
 ## Conventions
@@ -49,4 +49,4 @@ SaloonApiSdk → SaloonConnector → Request classes → Response DTOs
 - Prefer explicit types; PHPStan level 8 must stay clean.
 - This template uses `laravel/pint` from `require-dev` and `vendor/bin/pint` via Composer scripts (see `.claude/rules/laravel-package.md` for broader Laravel package guidance).
 
-After a successful `./init-saloon-sdk.sh` run, class names and namespaces match your choices: Composer `your-vendor` / `saloon-api-sdk-boilerplate`, a PascalCase class prefix (Sdk/Connector/ServiceProvider appended by the script), and derived root namespace `{VendorPascal}{Prefix}Sdk` (see README). The init script is removed at the end of that run.
+After a successful `./init-saloon-sdk.sh` run, class names and namespaces match your choices: Composer `laravel-gtm` / `hubspot-sdk`, a PascalCase class prefix (Sdk/Connector/ServiceProvider appended by the script), and derived root namespace `{VendorPascal}{Prefix}Sdk` (see README). The init script is removed at the end of that run.

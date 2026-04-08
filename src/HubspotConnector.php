@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace YourVendor\SaloonApiSdk;
+namespace LaravelGtm\HubspotSdk;
 
-use Saloon\Http\Auth\HeaderAuthenticator;
+use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
 use Saloon\RateLimitPlugin\Contracts\RateLimitStore;
@@ -14,7 +14,7 @@ use Saloon\RateLimitPlugin\Traits\HasRateLimits;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use Saloon\Traits\Plugins\HasTimeout;
 
-class SaloonConnector extends Connector
+class HubspotConnector extends Connector
 {
     use AlwaysThrowOnErrors;
     use HasRateLimits;
@@ -29,24 +29,25 @@ class SaloonConnector extends Connector
     public function __construct(
         private readonly ?string $baseUrl = null,
         private readonly ?string $token = null,
-        private readonly string $authHeaderName = 'X-Api-Key',
         ?RateLimitStore $rateLimitStore = null,
+        private readonly int $burstLimit = 190,
+        private readonly int $dailyLimit = 1000000,
     ) {
         $this->customRateLimitStore = $rateLimitStore;
     }
 
     public function resolveBaseUrl(): string
     {
-        return rtrim($this->baseUrl ?? 'https://api.example.com', '/');
+        return rtrim($this->baseUrl ?? 'https://api.hubapi.com', '/');
     }
 
-    protected function defaultAuth(): ?HeaderAuthenticator
+    protected function defaultAuth(): ?TokenAuthenticator
     {
         if ($this->token === null || $this->token === '') {
             return null;
         }
 
-        return new HeaderAuthenticator($this->token, $this->authHeaderName);
+        return new TokenAuthenticator($this->token);
     }
 
     protected function defaultHeaders(): array
@@ -63,7 +64,8 @@ class SaloonConnector extends Connector
     protected function resolveLimits(): array
     {
         return [
-            Limit::allow(60)->everyMinute()->name('default'),
+            Limit::allow($this->burstLimit)->everySeconds(10)->name('burst'),
+            Limit::allow($this->dailyLimit)->everyDay()->name('daily'),
         ];
     }
 
@@ -78,6 +80,12 @@ class SaloonConnector extends Connector
             return;
         }
 
-        $limit->exceeded(releaseInSeconds: 60);
+        $retryAfter = $response->header('Retry-After');
+
+        $releaseSeconds = $retryAfter !== null && $retryAfter !== ''
+            ? (int) $retryAfter
+            : 10;
+
+        $limit->exceeded(releaseInSeconds: $releaseSeconds);
     }
 }

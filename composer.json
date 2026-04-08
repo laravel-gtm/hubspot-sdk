@@ -1,0 +1,51 @@
+{
+    "name": "your-vendor/saloon-api-sdk-boilerplate",
+    "description": "Laravel-ready PHP API SDK boilerplate built with Saloon (template repository).",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+        "saloonphp/saloon": "^4.0",
+        "saloonphp/laravel-plugin": "^4.0",
+        "saloonphp/rate-limit-plugin": "^2.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "pestphp/pest": "^3.8",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "YourVendor\\SaloonApiSdk\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "YourVendor\\SaloonApiSdk\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "test:coverage": "pest --coverage",
+        "lint": "vendor/bin/pint --test",
+        "format": "vendor/bin/pint",
+        "analyse": "phpstan analyse"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "YourVendor\\SaloonApiSdk\\Laravel\\SaloonApiSdkServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

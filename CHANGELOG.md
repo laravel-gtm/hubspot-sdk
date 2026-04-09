@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `getDeal()` endpoint for fetching a single deal by ID with optional associations (contacts, companies, line_items, etc.)
+- `getContact()` endpoint for fetching a single contact by ID with optional associations
+- `listContacts()` endpoint for listing contacts with pagination, property selection, and associations
+- `listContactProperties()` endpoint for fetching contact property definitions
+- `Contact`, `GetContactResponse`, `ListContactsResponse`, and `ListContactPropertiesResponse` DTOs
+- `getDeal()` endpoint for fetching a single deal by ID with optional associations
 - `GetDealResponse` and `Association` response DTOs
 
 ## [0.0.4] - 2026-04-09

@@ -6,10 +6,16 @@ namespace LaravelGtm\HubspotSdk;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
+use LaravelGtm\HubspotSdk\Requests\ListContactPropertiesRequest;
+use LaravelGtm\HubspotSdk\Requests\ListContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
+use LaravelGtm\HubspotSdk\Responses\GetContactResponse;
 use LaravelGtm\HubspotSdk\Responses\GetDealResponse;
+use LaravelGtm\HubspotSdk\Responses\ListContactPropertiesResponse;
+use LaravelGtm\HubspotSdk\Responses\ListContactsResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
@@ -54,6 +60,64 @@ class HubspotSdk
         $connector->authenticate(new TokenAuthenticator($token));
 
         return new self($connector, $this->userTokenColumn);
+    }
+
+    /**
+     * Get a single contact by ID, optionally enriched with associations.
+     *
+     * @param  list<string>|null  $properties
+     * @param  list<string>|null  $propertiesWithHistory
+     * @param  list<string>|null  $associations
+     */
+    public function getContact(
+        string $contactId,
+        ?array $properties = null,
+        ?array $propertiesWithHistory = null,
+        ?array $associations = null,
+        ?bool $archived = null,
+    ): GetContactResponse {
+        /** @var GetContactResponse */
+        return $this->connector
+            ->send(new GetContactRequest($contactId, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
+     * List contacts from the HubSpot CRM.
+     *
+     * @param  list<string>|null  $properties
+     * @param  list<string>|null  $propertiesWithHistory
+     * @param  list<string>|null  $associations
+     */
+    public function listContacts(
+        ?int $limit = null,
+        ?string $after = null,
+        ?array $properties = null,
+        ?array $propertiesWithHistory = null,
+        ?array $associations = null,
+        ?bool $archived = null,
+    ): ListContactsResponse {
+        /** @var ListContactsResponse */
+        return $this->connector
+            ->send(new ListContactsRequest($limit, $after, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
+     * List contact property definitions (CRM Properties API).
+     *
+     * @param  'highly_sensitive'|'non_sensitive'|'sensitive'|null  $dataSensitivity
+     */
+    public function listContactProperties(
+        ?bool $archived = null,
+        ?string $dataSensitivity = null,
+        ?string $locale = null,
+        ?string $properties = null,
+    ): ListContactPropertiesResponse {
+        /** @var ListContactPropertiesResponse */
+        return $this->connector
+            ->send(new ListContactPropertiesRequest($archived, $dataSensitivity, $locale, $properties))
+            ->dtoOrFail();
     }
 
     /**

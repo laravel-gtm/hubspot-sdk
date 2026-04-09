@@ -1,2 +1,2 @@
-GET https://api.hubapi.com/crm/properties/2026-03/deals
-Authorization: Bearer {{HUBSPOT_BEARER_TOKEN}}
+GET https://api.hubapi.com/crm/v3/properties/deal/dealstage
+Authorization: Bearer {{HUBSPOT_API_KEY}}

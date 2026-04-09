@@ -7,7 +7,7 @@ use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 it('resolves the deal properties endpoint', function (): void {
     $request = new ListDealPropertiesRequest;
 
-    expect($request->resolveEndpoint())->toBe('/crm/properties/2026-03/deals');
+    expect($request->resolveEndpoint())->toBe('/crm/v3/properties/deal');
 });
 
 it('builds query parameters from constructor args', function (): void {

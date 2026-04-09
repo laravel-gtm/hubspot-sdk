@@ -23,9 +23,16 @@ class ListDealPropertiesRequest extends Request
         private readonly ?string $properties = null,
     ) {}
 
+    /**
+     * CRM Properties v3 — list all properties for the deal object.
+     *
+     * Object type `deal` matches `GET /crm/v3/properties/deal/{propertyName}`.
+     *
+     * @see https://developers.hubspot.com/docs/api-reference/crm-properties-v3/core/get-crm-v3-properties-objectType
+     */
     public function resolveEndpoint(): string
     {
-        return '/crm/properties/2026-03/deals';
+        return '/crm/v3/properties/deal';
     }
 
     /**

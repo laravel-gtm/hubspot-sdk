@@ -1,0 +1,31 @@
+POST https://api.hubapi.com/crm/objects/2026-03/deals/search
+Authorization: Bearer {{HUBSPOT_API_KEY}}
+Content-Type: application/json
+{
+    "after": "null",
+    "filterGroups": [
+        {
+            "filters": [
+                {
+                    "propertyName": "hubspot_owner_id",
+                    "operator": "HAS_PROPERTY"
+                },
+                {
+                    "propertyName": "dealstage",
+                    // "operator": "NOT_IN",
+                    // "values": ["closedwon", "closedlost", ]
+                    "operator": "IN",
+                    "values": ["1 - Discovery (Sales Pipeline)"]
+                }
+            ]
+        }
+    ],
+    "limit": 10,
+    "properties": ["dealname", "dealstage", "amount", "closedate", "pipeline", "hs_lastmodifieddate"],
+    "sorts": [
+        {
+            "propertyName": "hs_lastmodifieddate",
+            "direction": "DESCENDING"
+        }
+    ]
+}

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use LaravelGtm\HubspotSdk\HubspotConnector;
 use LaravelGtm\HubspotSdk\HubspotSdk;
+use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
+use LaravelGtm\HubspotSdk\Responses\CrmProperty;
 use LaravelGtm\HubspotSdk\Responses\Deal;
+use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -61,4 +64,35 @@ it('returns deals with no next page', function (): void {
 
     expect($response->results)->toBeEmpty();
     expect($response->paging->hasNextPage())->toBeFalse();
+});
+
+it('returns a list deal properties response', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        ListDealPropertiesRequest::class => MockResponse::make([
+            'results' => [
+                [
+                    'name' => 'dealname',
+                    'label' => 'Deal Name',
+                    'type' => 'string',
+                    'fieldType' => 'text',
+                    'groupName' => 'dealinformation',
+                    'description' => 'The name of the deal',
+                    'options' => [],
+                ],
+            ],
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->listDealProperties(archived: false, dataSensitivity: 'non_sensitive');
+
+    expect($response)->toBeInstanceOf(ListDealPropertiesResponse::class);
+    expect($response->results)->toHaveCount(1);
+    expect($response->results[0])->toBeInstanceOf(CrmProperty::class);
+    expect($response->results[0]->name)->toBe('dealname');
+    expect($response->results[0]->label)->toBe('Deal Name');
+
+    $mockClient->assertSent(ListDealPropertiesRequest::class);
 });

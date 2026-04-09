@@ -6,7 +6,9 @@ namespace LaravelGtm\HubspotSdk;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
+use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
 
@@ -70,6 +72,23 @@ class HubspotSdk
         /** @var ListDealsResponse */
         return $this->connector
             ->send(new ListDealsRequest($limit, $after, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
+     * List deal property definitions (CRM Properties API).
+     *
+     * @param  'highly_sensitive'|'non_sensitive'|'sensitive'|null  $dataSensitivity
+     */
+    public function listDealProperties(
+        ?bool $archived = null,
+        ?string $dataSensitivity = null,
+        ?string $locale = null,
+        ?string $properties = null,
+    ): ListDealPropertiesResponse {
+        /** @var ListDealPropertiesResponse */
+        return $this->connector
+            ->send(new ListDealPropertiesRequest($archived, $dataSensitivity, $locale, $properties))
             ->dtoOrFail();
     }
 }

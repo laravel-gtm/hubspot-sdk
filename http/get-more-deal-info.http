@@ -1,0 +1,2 @@
+GET https://api.hubapi.com/crm/v3/objects/deals/57030476464?associations=contacts,companies,line_items
+Authorization: Bearer {{HUBSPOT_API_KEY}}

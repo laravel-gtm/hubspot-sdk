@@ -1,0 +1,70 @@
+POST https://api.hubapi.com/crm/objects/2026-03/deals/search
+Authorization: Bearer {{HUBSPOT_API_KEY}}
+Content-Type: application/json
+{
+    "after": "null",
+    "filterGroups": [
+        {
+            "filters": [
+                {
+                    "propertyName": "hubspot_owner_id",
+                    "operator": "HAS_PROPERTY"
+                },
+                {
+                    "propertyName": "dealstage",
+                    "operator": "IN",
+                    "values": [
+                        "appointmentscheduled",
+                        "qualifiedtobuy",
+                        "presentationscheduled",
+                        "1195211162",
+                        "1009560840",
+                        "decisionmakerboughtin"
+                    ]
+                }
+            ]
+        }
+    ],
+    "limit": 10,
+    "properties": [
+        "dealname",
+        "dealstage",
+        "pipeline",
+        "dealtype",
+        "amount",
+        "amount_in_home_currency",
+        "hs_deal_stage_probability",
+        "hs_forecast_amount",
+        "hs_forecast_category",
+        "hs_projected_amount",
+        "createdate",
+        "closedate",
+        "hs_lastmodifieddate",
+        "hs_date_entered_closedwon",
+        "hs_date_entered_contractsent",
+        "hubspot_owner_id",
+        "hubspot_team_id",
+        "hs_created_by_user_id",
+        "hs_object_source",
+        "hs_object_source_label",
+        "notes_last_contacted",
+        "notes_last_updated",
+        "notes_next_activity_date",
+        "num_contacted_notes",
+        "num_notes",
+        "hs_num_associated_contacts",
+        "hs_sales_email_last_replied",
+        "hs_last_booked_meeting_date",
+        "hs_last_call_date",
+        "hs_last_email_date",
+        "hs_last_meeting_activity",
+        "hs_object_id",
+        "hs_deal_stage_probability_shadow"
+    ]
+    "sorts": [
+        {
+            "propertyName": "hs_lastmodifieddate",
+            "direction": "DESCENDING"
+        }
+    ]
+}

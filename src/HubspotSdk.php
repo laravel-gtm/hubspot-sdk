@@ -6,8 +6,10 @@ namespace LaravelGtm\HubspotSdk;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
+use LaravelGtm\HubspotSdk\Responses\GetDealResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
@@ -52,6 +54,26 @@ class HubspotSdk
         $connector->authenticate(new TokenAuthenticator($token));
 
         return new self($connector, $this->userTokenColumn);
+    }
+
+    /**
+     * Get a single deal by ID, optionally enriched with associations.
+     *
+     * @param  list<string>|null  $properties
+     * @param  list<string>|null  $propertiesWithHistory
+     * @param  list<string>|null  $associations
+     */
+    public function getDeal(
+        string $dealId,
+        ?array $properties = null,
+        ?array $propertiesWithHistory = null,
+        ?array $associations = null,
+        ?bool $archived = null,
+    ): GetDealResponse {
+        /** @var GetDealResponse */
+        return $this->connector
+            ->send(new GetDealRequest($dealId, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
     }
 
     /**

@@ -20,6 +20,12 @@ class HubspotConnector extends Connector
     use HasRateLimits;
     use HasTimeout;
 
+    public ?int $tries = 3;
+
+    public ?int $retryInterval = 500;
+
+    public ?bool $useExponentialBackoff = true;
+
     protected int $connectTimeout = 10;
 
     protected int $requestTimeout = 30;
@@ -30,7 +36,7 @@ class HubspotConnector extends Connector
         private readonly ?string $baseUrl = null,
         private readonly ?string $token = null,
         ?RateLimitStore $rateLimitStore = null,
-        private readonly int $burstLimit = 190,
+        private readonly int $burstLimit = 150,
         private readonly int $dailyLimit = 1000000,
     ) {
         $this->customRateLimitStore = $rateLimitStore;

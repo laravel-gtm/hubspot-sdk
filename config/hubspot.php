@@ -10,7 +10,7 @@ return [
         'token_column' => env('HUBSPOT_OAUTH_TOKEN_COLUMN', 'hubspot_access_token'),
     ],
     'rate_limit' => [
-        'burst' => (int) env('HUBSPOT_RATE_LIMIT_BURST', 190),
+        'burst' => (int) env('HUBSPOT_RATE_LIMIT_BURST', 150),
         'daily' => (int) env('HUBSPOT_RATE_LIMIT_DAILY', 1000000),
     ],
 ];

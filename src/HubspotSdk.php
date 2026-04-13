@@ -6,18 +6,26 @@ namespace LaravelGtm\HubspotSdk;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
+use LaravelGtm\HubspotSdk\Requests\GetOwnerRequest;
 use LaravelGtm\HubspotSdk\Requests\ListContactPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
+use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
+use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\GetContactResponse;
 use LaravelGtm\HubspotSdk\Responses\GetDealResponse;
 use LaravelGtm\HubspotSdk\Responses\ListContactPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListContactsResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
+use LaravelGtm\HubspotSdk\Responses\ListOwnersResponse;
+use LaravelGtm\HubspotSdk\Responses\Owner;
+use LaravelGtm\HubspotSdk\Responses\SearchCompaniesResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
 
 class HubspotSdk
@@ -175,6 +183,66 @@ class HubspotSdk
         /** @var ListDealPropertiesResponse */
         return $this->connector
             ->send(new ListDealPropertiesRequest($archived, $dataSensitivity, $locale, $properties))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Search companies using filter groups (CRM Search API).
+     *
+     * @param  list<array<string, mixed>>  $filterGroups
+     * @param  list<string>|null  $properties
+     * @param  list<array<string, string>>|null  $sorts
+     */
+    public function searchCompanies(
+        array $filterGroups = [],
+        ?array $properties = null,
+        ?int $limit = null,
+        ?string $after = null,
+        ?array $sorts = null,
+    ): SearchCompaniesResponse {
+        /** @var SearchCompaniesResponse */
+        return $this->connector
+            ->send(new SearchCompaniesRequest($filterGroups, $properties, $limit, $after, $sorts))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Get contacts associated with a company.
+     */
+    public function getCompanyContactAssociations(
+        string $companyId,
+        ?int $limit = null,
+        ?string $after = null,
+    ): AssociationListResponse {
+        /** @var AssociationListResponse */
+        return $this->connector
+            ->send(new GetCompanyContactAssociationsRequest($companyId, $limit, $after))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Get a single owner by ID.
+     */
+    public function getOwner(string $ownerId): Owner
+    {
+        /** @var Owner */
+        return $this->connector
+            ->send(new GetOwnerRequest($ownerId))
+            ->dtoOrFail();
+    }
+
+    /**
+     * List owners, optionally filtered by email.
+     */
+    public function listOwners(
+        ?string $email = null,
+        ?int $limit = null,
+        ?string $after = null,
+        ?bool $archived = null,
+    ): ListOwnersResponse {
+        /** @var ListOwnersResponse */
+        return $this->connector
+            ->send(new ListOwnersRequest($email, $limit, $after, $archived))
             ->dtoOrFail();
     }
 }

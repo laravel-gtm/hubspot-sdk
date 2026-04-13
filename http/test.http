@@ -1,2 +1,2 @@
-GET https://api.hubapi.com/crm/v3/properties/deal/dealstage
+GET https://api.hubapi.com/crm/v3/properties/company
 Authorization: Bearer {{HUBSPOT_API_KEY}}

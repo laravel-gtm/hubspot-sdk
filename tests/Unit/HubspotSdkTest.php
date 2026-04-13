@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 use LaravelGtm\HubspotSdk\HubspotConnector;
 use LaravelGtm\HubspotSdk\HubspotSdk;
+use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
+use LaravelGtm\HubspotSdk\Requests\GetOwnerRequest;
 use LaravelGtm\HubspotSdk\Requests\ListContactPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
+use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Responses\Association;
+use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
+use LaravelGtm\HubspotSdk\Responses\Company;
 use LaravelGtm\HubspotSdk\Responses\Contact;
 use LaravelGtm\HubspotSdk\Responses\CrmProperty;
 use LaravelGtm\HubspotSdk\Responses\Deal;
@@ -20,6 +26,9 @@ use LaravelGtm\HubspotSdk\Responses\ListContactPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListContactsResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
+use LaravelGtm\HubspotSdk\Responses\ListOwnersResponse;
+use LaravelGtm\HubspotSdk\Responses\Owner;
+use LaravelGtm\HubspotSdk\Responses\SearchCompaniesResponse;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -269,4 +278,125 @@ it('returns a list deal properties response', function (): void {
     expect($response->results[0]->label)->toBe('Deal Name');
 
     $mockClient->assertSent(ListDealPropertiesRequest::class);
+});
+
+it('returns a search companies response with pagination', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        SearchCompaniesRequest::class => MockResponse::make([
+            'total' => 150,
+            'results' => [
+                [
+                    'id' => '20787072317',
+                    'properties' => ['name' => 'Acme Corp', 'hubspot_owner_id' => '87644597'],
+                    'createdAt' => '2023-01-01T00:00:00.000Z',
+                    'updatedAt' => '2023-06-15T12:00:00.000Z',
+                    'archived' => false,
+                ],
+            ],
+            'paging' => [
+                'next' => ['after' => '20787072318'],
+            ],
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->searchCompanies(
+        filterGroups: [['filters' => [['propertyName' => 'hubspot_owner_id', 'operator' => 'HAS_PROPERTY']]]],
+        properties: ['name', 'hubspot_owner_id'],
+        limit: 100,
+    );
+
+    expect($response)->toBeInstanceOf(SearchCompaniesResponse::class);
+    expect($response->total)->toBe(150);
+    expect($response->results)->toHaveCount(1);
+    expect($response->results[0])->toBeInstanceOf(Company::class);
+    expect($response->results[0]->properties['name'])->toBe('Acme Corp');
+    expect($response->paging->hasNextPage())->toBeTrue();
+    expect($response->paging->nextAfter)->toBe('20787072318');
+
+    $mockClient->assertSent(SearchCompaniesRequest::class);
+});
+
+it('returns company contact associations', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        GetCompanyContactAssociationsRequest::class => MockResponse::make([
+            'results' => [
+                ['id' => '501', 'type' => 'company_to_contact'],
+                ['id' => '502', 'type' => 'company_to_contact'],
+            ],
+            'paging' => null,
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->getCompanyContactAssociations('20787072317');
+
+    expect($response)->toBeInstanceOf(AssociationListResponse::class);
+    expect($response->results)->toHaveCount(2);
+    expect($response->results[0])->toBeInstanceOf(Association::class);
+    expect($response->results[0]->id)->toBe('501');
+    expect($response->paging->hasNextPage())->toBeFalse();
+
+    $mockClient->assertSent(GetCompanyContactAssociationsRequest::class);
+});
+
+it('returns an owner by id', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        GetOwnerRequest::class => MockResponse::make([
+            'id' => '87644597',
+            'email' => 'ethan@laravel.com',
+            'firstName' => 'Ethan',
+            'lastName' => 'Maestas',
+            'userId' => '12345',
+            'archived' => false,
+            'createdAt' => '2023-01-01T00:00:00.000Z',
+            'updatedAt' => '2023-06-15T12:00:00.000Z',
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->getOwner('87644597');
+
+    expect($response)->toBeInstanceOf(Owner::class);
+    expect($response->id)->toBe('87644597');
+    expect($response->email)->toBe('ethan@laravel.com');
+    expect($response->firstName)->toBe('Ethan');
+    expect($response->lastName)->toBe('Maestas');
+
+    $mockClient->assertSent(GetOwnerRequest::class);
+});
+
+it('returns owners filtered by email', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        ListOwnersRequest::class => MockResponse::make([
+            'results' => [
+                [
+                    'id' => '87644597',
+                    'email' => 'ethan@laravel.com',
+                    'firstName' => 'Ethan',
+                    'lastName' => 'Maestas',
+                    'userId' => '12345',
+                    'archived' => false,
+                ],
+            ],
+            'paging' => null,
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->listOwners(email: 'ethan@laravel.com');
+
+    expect($response)->toBeInstanceOf(ListOwnersResponse::class);
+    expect($response->results)->toHaveCount(1);
+    expect($response->results[0]->email)->toBe('ethan@laravel.com');
+
+    $mockClient->assertSent(ListOwnersRequest::class);
 });

@@ -1,0 +1,32 @@
+POST https://api.hubapi.com/crm/v3/objects/companies/search
+Authorization: Bearer {{HUBSPOT_API_KEY}}
+Content-Type: application/json
+{
+    "filterGroups": [
+        {
+            "filters": [
+                {
+                    "propertyName": "hubspot_owner_id",
+                    "operator": "HAS_PROPERTY"
+                }
+            ]
+        }
+    ],
+    "properties": [
+        "name",
+        "domain",
+        "industry",
+        "numberofemployees",
+        "annualrevenue",
+        "city",
+        "state",
+        "country",
+        "description",
+        "hubspot_owner_id",
+        "constant_contact",
+        "num_associated_contacts",
+        "fullcontact",
+        "business_associations",
+        ""
+    ]
+}

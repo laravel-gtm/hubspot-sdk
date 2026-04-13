@@ -7,6 +7,7 @@ namespace LaravelGtm\HubspotSdk;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
+use LaravelGtm\HubspotSdk\Requests\GetCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
 use LaravelGtm\HubspotSdk\Requests\GetOwnerRequest;
@@ -16,7 +17,10 @@ use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
 use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
+use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
+use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
+use LaravelGtm\HubspotSdk\Responses\GetCompanyResponse;
 use LaravelGtm\HubspotSdk\Responses\GetContactResponse;
 use LaravelGtm\HubspotSdk\Responses\GetDealResponse;
 use LaravelGtm\HubspotSdk\Responses\ListContactPropertiesResponse;
@@ -26,6 +30,8 @@ use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
 use LaravelGtm\HubspotSdk\Responses\ListOwnersResponse;
 use LaravelGtm\HubspotSdk\Responses\Owner;
 use LaravelGtm\HubspotSdk\Responses\SearchCompaniesResponse;
+use LaravelGtm\HubspotSdk\Responses\SearchContactsResponse;
+use LaravelGtm\HubspotSdk\Responses\SearchDealsResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
 
 class HubspotSdk
@@ -149,6 +155,26 @@ class HubspotSdk
     }
 
     /**
+     * Get a single company by ID, optionally enriched with associations.
+     *
+     * @param  list<string>|null  $properties
+     * @param  list<string>|null  $propertiesWithHistory
+     * @param  list<string>|null  $associations
+     */
+    public function getCompany(
+        string $companyId,
+        ?array $properties = null,
+        ?array $propertiesWithHistory = null,
+        ?array $associations = null,
+        ?bool $archived = null,
+    ): GetCompanyResponse {
+        /** @var GetCompanyResponse */
+        return $this->connector
+            ->send(new GetCompanyRequest($companyId, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
      * List deals from the HubSpot CRM.
      *
      * @param  list<string>|null  $properties
@@ -203,6 +229,46 @@ class HubspotSdk
         /** @var SearchCompaniesResponse */
         return $this->connector
             ->send(new SearchCompaniesRequest($filterGroups, $properties, $limit, $after, $sorts))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Search deals using filter groups (CRM Search API).
+     *
+     * @param  list<array<string, mixed>>  $filterGroups
+     * @param  list<string>|null  $properties
+     * @param  list<array<string, string>>|null  $sorts
+     */
+    public function searchDeals(
+        array $filterGroups = [],
+        ?array $properties = null,
+        ?int $limit = null,
+        ?string $after = null,
+        ?array $sorts = null,
+    ): SearchDealsResponse {
+        /** @var SearchDealsResponse */
+        return $this->connector
+            ->send(new SearchDealsRequest($filterGroups, $properties, $limit, $after, $sorts))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Search contacts using filter groups (CRM Search API).
+     *
+     * @param  list<array<string, mixed>>  $filterGroups
+     * @param  list<string>|null  $properties
+     * @param  list<array<string, string>>|null  $sorts
+     */
+    public function searchContacts(
+        array $filterGroups = [],
+        ?array $properties = null,
+        ?int $limit = null,
+        ?string $after = null,
+        ?array $sorts = null,
+    ): SearchContactsResponse {
+        /** @var SearchContactsResponse */
+        return $this->connector
+            ->send(new SearchContactsRequest($filterGroups, $properties, $limit, $after, $sorts))
             ->dtoOrFail();
     }
 

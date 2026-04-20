@@ -27,6 +27,6 @@ Content-Type: application/json
         "num_associated_contacts",
         "fullcontact",
         "business_associations",
-        ""
+        "hubspot_owner_id"
     ]
 }

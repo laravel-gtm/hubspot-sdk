@@ -6,16 +6,19 @@ namespace LaravelGtm\HubspotSdk;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use LaravelGtm\HubspotSdk\Requests\EnrollContactInSequenceRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
 use LaravelGtm\HubspotSdk\Requests\GetOwnerRequest;
+use LaravelGtm\HubspotSdk\Requests\GetSequenceRequest;
 use LaravelGtm\HubspotSdk\Requests\ListContactPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
 use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
+use LaravelGtm\HubspotSdk\Requests\ListSequencesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
@@ -28,10 +31,13 @@ use LaravelGtm\HubspotSdk\Responses\ListContactsResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
 use LaravelGtm\HubspotSdk\Responses\ListOwnersResponse;
+use LaravelGtm\HubspotSdk\Responses\ListSequencesResponse;
 use LaravelGtm\HubspotSdk\Responses\Owner;
 use LaravelGtm\HubspotSdk\Responses\SearchCompaniesResponse;
 use LaravelGtm\HubspotSdk\Responses\SearchContactsResponse;
 use LaravelGtm\HubspotSdk\Responses\SearchDealsResponse;
+use LaravelGtm\HubspotSdk\Responses\Sequence;
+use LaravelGtm\HubspotSdk\Responses\SequenceEnrollmentResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
 
 class HubspotSdk
@@ -309,6 +315,58 @@ class HubspotSdk
         /** @var ListOwnersResponse */
         return $this->connector
             ->send(new ListOwnersRequest($email, $limit, $after, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
+     * List sales sequences visible to the given HubSpot user.
+     *
+     * The `userId` is required by HubSpot — it must be the owner ID (from /crm/v3/owners)
+     * of the user whose sequences you want to list. When calling with a private-app token,
+     * this must match the user that created the private app.
+     */
+    public function listSequences(
+        string $userId,
+        ?int $limit = null,
+        ?string $after = null,
+    ): ListSequencesResponse {
+        /** @var ListSequencesResponse */
+        return $this->connector
+            ->send(new ListSequencesRequest($userId, $limit, $after))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Get a single sequence by ID including its steps and delay configuration.
+     *
+     * The `userId` is required by HubSpot (see listSequences() docs).
+     */
+    public function getSequence(string $sequenceId, string $userId): Sequence
+    {
+        /** @var Sequence */
+        return $this->connector
+            ->send(new GetSequenceRequest($sequenceId, $userId))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Enroll a contact in a sequence.
+     *
+     * The `senderEmail` must be an email address connected to your HubSpot account.
+     * The `userId` must be the owner ID of the user associated with the OAuth token
+     * (or, for private apps, the user that created the app).
+     *
+     * Note: there is a limit of 1000 enrollments per portal inbox per day.
+     */
+    public function enrollContactInSequence(
+        string $sequenceId,
+        string $contactId,
+        string $senderEmail,
+        string $userId,
+    ): SequenceEnrollmentResponse {
+        /** @var SequenceEnrollmentResponse */
+        return $this->connector
+            ->send(new EnrollContactInSequenceRequest($sequenceId, $contactId, $senderEmail, $userId))
             ->dtoOrFail();
     }
 }

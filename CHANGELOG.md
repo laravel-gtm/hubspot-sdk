@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `listSequences()` endpoint for listing sales sequences visible to a given user (paginated)
+- `getSequence()` endpoint for fetching a single sequence including its steps and `delayMillis`
+- `enrollContactInSequence()` endpoint for enrolling a contact in a sequence
+- `Sequence`, `SequenceStep`, `ListSequencesResponse`, and `SequenceEnrollmentResponse` DTOs
 - `getContact()` endpoint for fetching a single contact by ID with optional associations
 - `listContacts()` endpoint for listing contacts with pagination, property selection, and associations
 - `listContactProperties()` endpoint for fetching contact property definitions

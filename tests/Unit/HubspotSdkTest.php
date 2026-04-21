@@ -17,6 +17,7 @@ use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\Association;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\Company;
@@ -69,6 +70,37 @@ it('returns a single contact with associations', function (): void {
     expect($response->associations['deals'][0])->toBeInstanceOf(Association::class);
 
     $mockClient->assertSent(GetContactRequest::class);
+});
+
+it('updates a contact and returns the updated contact dto', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        UpdateContactRequest::class => MockResponse::make([
+            'id' => '501',
+            'properties' => ['email' => 'jane@example.com', 'lead_accepted' => 'rejected'],
+            'createdAt' => '2023-01-01T00:00:00.000Z',
+            'updatedAt' => '2023-06-15T12:00:00.000Z',
+            'archived' => false,
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->updateContact('501', ['lead_accepted' => 'rejected']);
+
+    expect($response)->toBeInstanceOf(GetContactResponse::class);
+    expect($response->id)->toBe('501');
+    expect($response->properties['lead_accepted'])->toBe('rejected');
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof UpdateContactRequest) {
+            return false;
+        }
+
+        $body = $request->body()->all();
+
+        return $body === ['properties' => ['lead_accepted' => 'rejected']];
+    });
 });
 
 it('returns a list contacts response', function (): void {

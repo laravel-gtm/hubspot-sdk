@@ -22,6 +22,7 @@ use LaravelGtm\HubspotSdk\Requests\ListSequencesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\GetCompanyResponse;
 use LaravelGtm\HubspotSdk\Responses\GetContactResponse;
@@ -120,6 +121,22 @@ class HubspotSdk
         /** @var ListContactsResponse */
         return $this->connector
             ->send(new ListContactsRequest($limit, $after, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Update properties on a HubSpot contact (PATCH).
+     *
+     * Only the properties provided are modified; others are untouched. Returns
+     * the updated contact as a GetContactResponse.
+     *
+     * @param  array<string, string|int|float|bool|null>  $properties
+     */
+    public function updateContact(string $contactId, array $properties): GetContactResponse
+    {
+        /** @var GetContactResponse */
+        return $this->connector
+            ->send(new UpdateContactRequest($contactId, $properties))
             ->dtoOrFail();
     }
 

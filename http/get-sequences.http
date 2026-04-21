@@ -1,0 +1,2 @@
+GET https://api.hubapi.com/automation/sequences/2026-03?userId=83705097
+Authorization: Bearer {{HUBSPOT_API_KEY}}

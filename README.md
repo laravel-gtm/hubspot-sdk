@@ -11,12 +11,26 @@ A Laravel-ready PHP SDK for the HubSpot CRM API, built with [Saloon](https://doc
 
 | SDK Method | HTTP | API Endpoint | Since |
 |-----------|------|-------------|-------|
-| `getContact()` | GET | `/crm/v3/objects/contacts/{contactId}` | unreleased |
-| `listContacts()` | GET | `/crm/v3/objects/contacts` | unreleased |
-| `listContactProperties()` | GET | `/crm/v3/properties/contact` | unreleased |
-| `getDeal()` | GET | `/crm/v3/objects/deals/{dealId}` | unreleased |
+| `createContact()` | POST | `/crm/v3/objects/contacts` | unreleased |
+| `createCompany()` | POST | `/crm/v3/objects/companies` | unreleased |
+| `updateCompany()` | PATCH | `/crm/v3/objects/companies/{companyId}` | unreleased |
+| `getContact()` | GET | `/crm/v3/objects/contacts/{contactId}` | v0.0.6 |
+| `listContacts()` | GET | `/crm/v3/objects/contacts` | v0.0.6 |
+| `listContactProperties()` | GET | `/crm/v3/properties/contact` | v0.0.6 |
+| `updateContact()` | PATCH | `/crm/v3/objects/contacts/{contactId}` | v0.0.11 |
+| `getCompany()` | GET | `/crm/v3/objects/companies/{companyId}` | v0.0.9 |
+| `getCompanyContactAssociations()` | GET | `/crm/v3/objects/companies/{companyId}/associations/contacts` | v0.0.7 |
+| `searchCompanies()` | POST | `/crm/v3/objects/companies/search` | v0.0.7 |
+| `searchContacts()` | POST | `/crm/v3/objects/contacts/search` | v0.0.9 |
+| `searchDeals()` | POST | `/crm/v3/objects/deals/search` | v0.0.9 |
+| `getDeal()` | GET | `/crm/v3/objects/deals/{dealId}` | v0.0.5 |
 | `listDeals()` | GET | `/crm/v3/objects/deals` | v0.0.1 |
 | `listDealProperties()` | GET | `/crm/v3/properties/deal` | v0.0.3 |
+| `getOwner()` | GET | `/crm/v3/owners/{ownerId}` | v0.0.7 |
+| `listOwners()` | GET | `/crm/v3/owners` | v0.0.7 |
+| `listSequences()` | GET | `/automation/sequences/2026-03` | v0.0.10 |
+| `getSequence()` | GET | `/automation/sequences/2026-03/{sequenceId}` | v0.0.10 |
+| `enrollContactInSequence()` | POST | `/automation/sequences/2026-03/enrollments` | v0.0.10 |
 
 ## Installation
 
@@ -57,6 +71,17 @@ $sdk = HubspotSdk::make(
     baseUrl: 'claude',
     token: 'your-token',
 );
+```
+
+### Alerting on expired tokens
+
+Register a callback invoked whenever a request fails with a 401 Unauthorized response,
+before the exception propagates. Useful for alerting on expired or revoked OAuth tokens.
+
+```php
+$sdk->onUnauthorized(function (\Saloon\Http\Response $response): void {
+    // e.g. notify, log, or flag the user's connection as needing reauthorization
+});
 ```
 
 ## Development

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use LaravelGtm\HubspotSdk\HubspotConnector;
 use LaravelGtm\HubspotSdk\HubspotSdk;
+use LaravelGtm\HubspotSdk\Requests\CreateCompanyRequest;
+use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
@@ -17,6 +19,7 @@ use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\Association;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
@@ -100,6 +103,35 @@ it('updates a contact and returns the updated contact dto', function (): void {
         $body = $request->body()->all();
 
         return $body === ['properties' => ['lead_accepted' => 'rejected']];
+    });
+});
+
+it('creates a contact and returns the created contact dto', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        CreateContactRequest::class => MockResponse::make([
+            'id' => '601',
+            'properties' => ['email' => 'new@example.com'],
+            'createdAt' => '2023-01-01T00:00:00.000Z',
+            'updatedAt' => '2023-01-01T00:00:00.000Z',
+            'archived' => false,
+        ], 201),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->createContact(['email' => 'new@example.com']);
+
+    expect($response)->toBeInstanceOf(GetContactResponse::class);
+    expect($response->id)->toBe('601');
+    expect($response->properties['email'])->toBe('new@example.com');
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof CreateContactRequest) {
+            return false;
+        }
+
+        return $request->body()->all() === ['properties' => ['email' => 'new@example.com']];
     });
 });
 
@@ -201,6 +233,64 @@ it('returns a single company with associations', function (): void {
     expect($response->associations['contacts'][0])->toBeInstanceOf(Association::class);
 
     $mockClient->assertSent(GetCompanyRequest::class);
+});
+
+it('creates a company and returns the created company dto', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        CreateCompanyRequest::class => MockResponse::make([
+            'id' => '20787072999',
+            'properties' => ['name' => 'New Corp'],
+            'createdAt' => '2023-01-01T00:00:00.000Z',
+            'updatedAt' => '2023-01-01T00:00:00.000Z',
+            'archived' => false,
+        ], 201),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->createCompany(['name' => 'New Corp']);
+
+    expect($response)->toBeInstanceOf(GetCompanyResponse::class);
+    expect($response->id)->toBe('20787072999');
+    expect($response->properties['name'])->toBe('New Corp');
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof CreateCompanyRequest) {
+            return false;
+        }
+
+        return $request->body()->all() === ['properties' => ['name' => 'New Corp']];
+    });
+});
+
+it('updates a company and returns the updated company dto', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        UpdateCompanyRequest::class => MockResponse::make([
+            'id' => '20787072317',
+            'properties' => ['name' => 'Acme Corporation'],
+            'createdAt' => '2023-01-01T00:00:00.000Z',
+            'updatedAt' => '2023-06-15T12:00:00.000Z',
+            'archived' => false,
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->updateCompany('20787072317', ['name' => 'Acme Corporation']);
+
+    expect($response)->toBeInstanceOf(GetCompanyResponse::class);
+    expect($response->id)->toBe('20787072317');
+    expect($response->properties['name'])->toBe('Acme Corporation');
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof UpdateCompanyRequest) {
+            return false;
+        }
+
+        return $request->body()->all() === ['properties' => ['name' => 'Acme Corporation']];
+    });
 });
 
 it('returns a single deal with associations', function (): void {

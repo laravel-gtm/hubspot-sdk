@@ -6,6 +6,7 @@ namespace LaravelGtm\HubspotSdk;
 
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
+use Saloon\Http\PendingRequest;
 use Saloon\Http\Response;
 use Saloon\RateLimitPlugin\Contracts\RateLimitStore;
 use Saloon\RateLimitPlugin\Limit;
@@ -32,6 +33,11 @@ class HubspotConnector extends Connector
 
     private readonly ?RateLimitStore $customRateLimitStore;
 
+    /**
+     * @var (\Closure(Response): void)|null
+     */
+    private ?\Closure $onUnauthorized = null;
+
     public function __construct(
         private readonly ?string $baseUrl = null,
         private readonly ?string $token = null,
@@ -40,6 +46,29 @@ class HubspotConnector extends Connector
         private readonly int $dailyLimit = 1000000,
     ) {
         $this->customRateLimitStore = $rateLimitStore;
+    }
+
+    /**
+     * Register a callback invoked whenever a request fails with a 401 Unauthorized
+     * response, before the exception propagates. Transport-layer only: it observes
+     * the response but does not suppress or alter the resulting exception.
+     *
+     * @param  callable(Response): void  $callback
+     */
+    public function onUnauthorized(callable $callback): static
+    {
+        $this->onUnauthorized = $callback(...);
+
+        return $this;
+    }
+
+    public function boot(PendingRequest $pendingRequest): void
+    {
+        $pendingRequest->middleware()->onResponse(function (Response $response): void {
+            if ($this->onUnauthorized !== null && $response->status() === 401) {
+                ($this->onUnauthorized)($response);
+            }
+        });
     }
 
     public function resolveBaseUrl(): string

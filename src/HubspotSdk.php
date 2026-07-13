@@ -6,6 +6,8 @@ namespace LaravelGtm\HubspotSdk;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use LaravelGtm\HubspotSdk\Requests\CreateCompanyRequest;
+use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
 use LaravelGtm\HubspotSdk\Requests\EnrollContactInSequenceRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyRequest;
@@ -22,6 +24,7 @@ use LaravelGtm\HubspotSdk\Requests\ListSequencesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\GetCompanyResponse;
@@ -40,6 +43,7 @@ use LaravelGtm\HubspotSdk\Responses\SearchDealsResponse;
 use LaravelGtm\HubspotSdk\Responses\Sequence;
 use LaravelGtm\HubspotSdk\Responses\SequenceEnrollmentResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
+use Saloon\Http\Response;
 
 class HubspotSdk
 {
@@ -81,6 +85,20 @@ class HubspotSdk
         $connector->authenticate(new TokenAuthenticator($token));
 
         return new self($connector, $this->userTokenColumn);
+    }
+
+    /**
+     * Register a callback invoked whenever a request fails with a 401 Unauthorized
+     * response, before the exception propagates. Useful for alerting on expired
+     * or revoked OAuth tokens.
+     *
+     * @param  callable(Response): void  $callback
+     */
+    public function onUnauthorized(callable $callback): static
+    {
+        $this->connector->onUnauthorized($callback);
+
+        return $this;
     }
 
     /**
@@ -141,6 +159,19 @@ class HubspotSdk
     }
 
     /**
+     * Create a new HubSpot contact (POST).
+     *
+     * @param  array<string, string|int|float|bool|null>  $properties
+     */
+    public function createContact(array $properties): GetContactResponse
+    {
+        /** @var GetContactResponse */
+        return $this->connector
+            ->send(new CreateContactRequest($properties))
+            ->dtoOrFail();
+    }
+
+    /**
      * List contact property definitions (CRM Properties API).
      *
      * @param  'highly_sensitive'|'non_sensitive'|'sensitive'|null  $dataSensitivity
@@ -194,6 +225,35 @@ class HubspotSdk
         /** @var GetCompanyResponse */
         return $this->connector
             ->send(new GetCompanyRequest($companyId, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Create a new HubSpot company (POST).
+     *
+     * @param  array<string, string|int|float|bool|null>  $properties
+     */
+    public function createCompany(array $properties): GetCompanyResponse
+    {
+        /** @var GetCompanyResponse */
+        return $this->connector
+            ->send(new CreateCompanyRequest($properties))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Update properties on a HubSpot company (PATCH).
+     *
+     * Only the properties provided are modified; others are untouched. Returns
+     * the updated company as a GetCompanyResponse.
+     *
+     * @param  array<string, string|int|float|bool|null>  $properties
+     */
+    public function updateCompany(string $companyId, array $properties): GetCompanyResponse
+    {
+        /** @var GetCompanyResponse */
+        return $this->connector
+            ->send(new UpdateCompanyRequest($companyId, $properties))
             ->dtoOrFail();
     }
 

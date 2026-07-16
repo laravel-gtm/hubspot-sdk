@@ -6,6 +6,7 @@ namespace LaravelGtm\HubspotSdk;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use LaravelGtm\HubspotSdk\Requests\AssociateContactWithCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
 use LaravelGtm\HubspotSdk\Requests\EnrollContactInSequenceRequest;
@@ -27,6 +28,7 @@ use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
+use LaravelGtm\HubspotSdk\Responses\AssociationResult;
 use LaravelGtm\HubspotSdk\Responses\GetCompanyResponse;
 use LaravelGtm\HubspotSdk\Responses\GetContactResponse;
 use LaravelGtm\HubspotSdk\Responses\GetDealResponse;
@@ -366,6 +368,22 @@ class HubspotSdk
         /** @var AssociationListResponse */
         return $this->connector
             ->send(new GetCompanyContactAssociationsRequest($companyId, $limit, $after))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Associate a contact with a company using HubSpot's default (unlabeled)
+     * association type.
+     *
+     * The `associatedcompanyid` contact property became read-only in HubSpot
+     * on 2019-04-26 and can no longer be set via create/update requests — the
+     * Associations API is the only way to link a contact to a company.
+     */
+    public function associateContactWithCompany(string $contactId, string $companyId): AssociationResult
+    {
+        /** @var AssociationResult */
+        return $this->connector
+            ->send(new AssociateContactWithCompanyRequest($contactId, $companyId))
             ->dtoOrFail();
     }
 

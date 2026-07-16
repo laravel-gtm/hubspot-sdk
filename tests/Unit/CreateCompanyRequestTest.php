@@ -29,3 +29,9 @@ it('wraps properties in a properties envelope in the body', function (): void {
         ],
     ]);
 });
+
+it('never retries, since a create is not idempotent', function (): void {
+    $request = new CreateCompanyRequest(['name' => 'Acme Corp']);
+
+    expect($request->tries)->toBe(1);
+});

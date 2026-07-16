@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use LaravelGtm\HubspotSdk\HubspotConnector;
 use LaravelGtm\HubspotSdk\HubspotSdk;
+use LaravelGtm\HubspotSdk\Requests\AssociateContactWithCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
@@ -23,6 +24,7 @@ use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\Association;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
+use LaravelGtm\HubspotSdk\Responses\AssociationResult;
 use LaravelGtm\HubspotSdk\Responses\Company;
 use LaravelGtm\HubspotSdk\Responses\Contact;
 use LaravelGtm\HubspotSdk\Responses\CrmProperty;
@@ -589,6 +591,39 @@ it('returns company contact associations', function (): void {
     expect($response->paging->hasNextPage())->toBeFalse();
 
     $mockClient->assertSent(GetCompanyContactAssociationsRequest::class);
+});
+
+it('associates a contact with a company via the default association type', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        AssociateContactWithCompanyRequest::class => MockResponse::make([
+            'results' => [
+                [
+                    'fromObjectTypeId' => '0-1',
+                    'fromObjectId' => '501',
+                    'toObjectTypeId' => '0-2',
+                    'toObjectId' => '20787072317',
+                    'labels' => [],
+                ],
+            ],
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->associateContactWithCompany('501', '20787072317');
+
+    expect($response)->toBeInstanceOf(AssociationResult::class);
+    expect($response->fromObjectId)->toBe('501');
+    expect($response->toObjectId)->toBe('20787072317');
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof AssociateContactWithCompanyRequest) {
+            return false;
+        }
+
+        return $request->resolveEndpoint() === '/crm/v4/objects/contacts/501/associations/default/companies/20787072317';
+    });
 });
 
 it('returns an owner by id', function (): void {

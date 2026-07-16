@@ -3,7 +3,12 @@
 declare(strict_types=1);
 
 use LaravelGtm\HubspotSdk\HubspotConnector;
+use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
+use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
+use Saloon\Exceptions\Request\ServerException;
 use Saloon\Http\Auth\TokenAuthenticator;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 it('resolves custom base urls without trailing slash', function (): void {
     $connector = new HubspotConnector('https://example.test/', null);
@@ -37,4 +42,32 @@ it('uses configurable burst rate limit', function (): void {
     $limits = $method->invoke($connector);
 
     expect($limits)->toHaveCount(2);
+});
+
+it('does not retry a create request after a failure, since creates are not idempotent', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        CreateContactRequest::class => MockResponse::make(['message' => 'server error'], 500),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    expect(fn () => $connector->send(new CreateContactRequest(['email' => 'jane@example.com'])))
+        ->toThrow(ServerException::class);
+
+    $mockClient->assertSentCount(1);
+});
+
+it('retries an idempotent get request up to the configured number of tries', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $connector->retryInterval = 0;
+
+    $mockClient = new MockClient([
+        GetContactRequest::class => MockResponse::make(['message' => 'server error'], 500),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    expect(fn () => $connector->send(new GetContactRequest('501')))
+        ->toThrow(ServerException::class);
+
+    $mockClient->assertSentCount(3);
 });

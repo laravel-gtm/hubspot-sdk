@@ -18,6 +18,13 @@ class CreateContactRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     /**
+     * Creates are not idempotent — a timeout after HubSpot has already
+     * persisted the contact would otherwise cause the connector's retry
+     * policy to mint a duplicate. Never retry this request.
+     */
+    public ?int $tries = 1;
+
+    /**
      * @param  array<string, string|int|float|bool|null>  $properties
      */
     public function __construct(

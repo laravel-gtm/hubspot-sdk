@@ -7,8 +7,10 @@ use LaravelGtm\HubspotSdk\HubspotSdk;
 use LaravelGtm\HubspotSdk\Requests\AssociateContactWithCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
+use LaravelGtm\HubspotSdk\Requests\DemotePrimaryCompanyAssociationRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyRequest;
+use LaravelGtm\HubspotSdk\Requests\GetContactCompanyAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
 use LaravelGtm\HubspotSdk\Requests\GetOwnerRequest;
@@ -20,6 +22,7 @@ use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\SetPrimaryCompanyAssociationRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\Association;
@@ -27,6 +30,7 @@ use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\AssociationResult;
 use LaravelGtm\HubspotSdk\Responses\Company;
 use LaravelGtm\HubspotSdk\Responses\Contact;
+use LaravelGtm\HubspotSdk\Responses\ContactCompanyAssociationsResponse;
 use LaravelGtm\HubspotSdk\Responses\CrmProperty;
 use LaravelGtm\HubspotSdk\Responses\Deal;
 use LaravelGtm\HubspotSdk\Responses\GetCompanyResponse;
@@ -623,6 +627,93 @@ it('associates a contact with a company via the default association type', funct
         }
 
         return $request->resolveEndpoint() === '/crm/v4/objects/contacts/501/associations/default/companies/20787072317';
+    });
+});
+
+it('sets a contact\'s primary company association', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        SetPrimaryCompanyAssociationRequest::class => MockResponse::make([
+            'results' => [
+                [
+                    'fromObjectTypeId' => '0-1',
+                    'fromObjectId' => '501',
+                    'toObjectTypeId' => '0-2',
+                    'toObjectId' => '20787072317',
+                    'labels' => ['Primary'],
+                ],
+            ],
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->setPrimaryCompanyAssociation('501', '20787072317');
+
+    expect($response)->toBeInstanceOf(AssociationResult::class);
+    expect($response->fromObjectId)->toBe('501');
+    expect($response->toObjectId)->toBe('20787072317');
+    expect($response->labels)->toBe(['Primary']);
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof SetPrimaryCompanyAssociationRequest) {
+            return false;
+        }
+
+        return $request->resolveEndpoint() === '/crm/v4/objects/contacts/501/associations/companies/20787072317';
+    });
+});
+
+it('returns a contact\'s company associations with association types', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        GetContactCompanyAssociationsRequest::class => MockResponse::make([
+            'results' => [
+                [
+                    'toObjectId' => '20787072317',
+                    'associationTypes' => [
+                        ['category' => 'HUBSPOT_DEFINED', 'typeId' => 1, 'label' => 'Primary'],
+                    ],
+                ],
+            ],
+            'paging' => null,
+        ], 200),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $response = $sdk->getContactCompanyAssociations('501');
+
+    expect($response)->toBeInstanceOf(ContactCompanyAssociationsResponse::class);
+    expect($response->results)->toHaveCount(1);
+    expect($response->results[0]->companyId)->toBe('20787072317');
+    expect($response->results[0]->isPrimary())->toBeTrue();
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof GetContactCompanyAssociationsRequest) {
+            return false;
+        }
+
+        return $request->resolveEndpoint() === '/crm/v4/objects/contacts/501/associations/companies';
+    });
+});
+
+it('demotes a primary company association', function (): void {
+    $connector = new HubspotConnector('https://api.hubapi.com', 'test-token');
+    $mockClient = new MockClient([
+        DemotePrimaryCompanyAssociationRequest::class => MockResponse::make([], 204),
+    ]);
+    $connector->withMockClient($mockClient);
+
+    $sdk = new HubspotSdk($connector);
+    $sdk->demotePrimaryCompanyAssociation('501', '20787072317');
+
+    $mockClient->assertSent(function ($request): bool {
+        if (! $request instanceof DemotePrimaryCompanyAssociationRequest) {
+            return false;
+        }
+
+        return $request->resolveEndpoint() === '/crm/v4/associations/contacts/companies/batch/labels/archive';
     });
 });
 

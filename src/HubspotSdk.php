@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use LaravelGtm\HubspotSdk\Requests\AssociateContactWithCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
+use LaravelGtm\HubspotSdk\Requests\DemotePrimaryCompanyAssociationRequest;
 use LaravelGtm\HubspotSdk\Requests\EnrollContactInSequenceRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyContactAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetCompanyRequest;
+use LaravelGtm\HubspotSdk\Requests\GetContactCompanyAssociationsRequest;
 use LaravelGtm\HubspotSdk\Requests\GetContactRequest;
 use LaravelGtm\HubspotSdk\Requests\GetDealRequest;
 use LaravelGtm\HubspotSdk\Requests\GetOwnerRequest;
@@ -25,10 +27,12 @@ use LaravelGtm\HubspotSdk\Requests\ListSequencesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\SetPrimaryCompanyAssociationRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\AssociationResult;
+use LaravelGtm\HubspotSdk\Responses\ContactCompanyAssociationsResponse;
 use LaravelGtm\HubspotSdk\Responses\GetCompanyResponse;
 use LaravelGtm\HubspotSdk\Responses\GetContactResponse;
 use LaravelGtm\HubspotSdk\Responses\GetDealResponse;
@@ -385,6 +389,53 @@ class HubspotSdk
         return $this->connector
             ->send(new AssociateContactWithCompanyRequest($contactId, $companyId))
             ->dtoOrFail();
+    }
+
+    /**
+     * Set a contact's primary company association (HubSpot-defined type ID 1).
+     *
+     * Per HubSpot's Associations v4 API, a contact can have only one primary
+     * company at a time, but setting a new primary does NOT automatically
+     * demote the previous one — HubSpot leaves the old association in place
+     * (still labeled primary) unless the caller removes or updates it
+     * separately. Callers that need a single primary company must handle
+     * that cleanup themselves.
+     */
+    public function setPrimaryCompanyAssociation(string $contactId, string $companyId): AssociationResult
+    {
+        /** @var AssociationResult */
+        return $this->connector
+            ->send(new SetPrimaryCompanyAssociationRequest($contactId, $companyId))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Get every company a contact is associated with, including each
+     * association's category/typeId/label so callers can determine which
+     * (if any) company is currently primary.
+     */
+    public function getContactCompanyAssociations(string $contactId): ContactCompanyAssociationsResponse
+    {
+        /** @var ContactCompanyAssociationsResponse */
+        return $this->connector
+            ->send(new GetContactCompanyAssociationsRequest($contactId))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Archive the "Primary" label (HubSpot-defined, typeId 1) between a
+     * contact and a company, without removing the underlying default
+     * association.
+     *
+     * Because setPrimaryCompanyAssociation() does not automatically demote
+     * a contact's previous primary company, callers that need exactly one
+     * primary company must call this against the old company first (or
+     * after) when reassigning primary status.
+     */
+    public function demotePrimaryCompanyAssociation(string $contactId, string $companyId): void
+    {
+        $this->connector
+            ->send(new DemotePrimaryCompanyAssociationRequest($contactId, $companyId));
     }
 
     /**

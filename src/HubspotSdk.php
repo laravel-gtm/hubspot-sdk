@@ -7,6 +7,8 @@ namespace LaravelGtm\HubspotSdk;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use LaravelGtm\HubspotSdk\Requests\AssociateContactWithCompanyRequest;
+use LaravelGtm\HubspotSdk\Requests\BatchReadAssociationsRequest;
+use LaravelGtm\HubspotSdk\Requests\BatchReadObjectsRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\CreateContactRequest;
 use LaravelGtm\HubspotSdk\Requests\DemotePrimaryCompanyAssociationRequest;
@@ -22,16 +24,20 @@ use LaravelGtm\HubspotSdk\Requests\ListContactPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\ListObjectPropertiesRequest;
 use LaravelGtm\HubspotSdk\Requests\ListOwnersRequest;
 use LaravelGtm\HubspotSdk\Requests\ListSequencesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchCompaniesRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchContactsRequest;
 use LaravelGtm\HubspotSdk\Requests\SearchDealsRequest;
+use LaravelGtm\HubspotSdk\Requests\SearchObjectsRequest;
 use LaravelGtm\HubspotSdk\Requests\SetPrimaryCompanyAssociationRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\AssociationResult;
+use LaravelGtm\HubspotSdk\Responses\BatchAssociationsResponse;
+use LaravelGtm\HubspotSdk\Responses\BatchObjectsResponse;
 use LaravelGtm\HubspotSdk\Responses\ContactCompanyAssociationsResponse;
 use LaravelGtm\HubspotSdk\Responses\GetCompanyResponse;
 use LaravelGtm\HubspotSdk\Responses\GetContactResponse;
@@ -40,12 +46,14 @@ use LaravelGtm\HubspotSdk\Responses\ListContactPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListContactsResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListDealsResponse;
+use LaravelGtm\HubspotSdk\Responses\ListObjectPropertiesResponse;
 use LaravelGtm\HubspotSdk\Responses\ListOwnersResponse;
 use LaravelGtm\HubspotSdk\Responses\ListSequencesResponse;
 use LaravelGtm\HubspotSdk\Responses\Owner;
 use LaravelGtm\HubspotSdk\Responses\SearchCompaniesResponse;
 use LaravelGtm\HubspotSdk\Responses\SearchContactsResponse;
 use LaravelGtm\HubspotSdk\Responses\SearchDealsResponse;
+use LaravelGtm\HubspotSdk\Responses\SearchObjectsResponse;
 use LaravelGtm\HubspotSdk\Responses\Sequence;
 use LaravelGtm\HubspotSdk\Responses\SequenceEnrollmentResponse;
 use Saloon\Http\Auth\TokenAuthenticator;
@@ -513,6 +521,91 @@ class HubspotSdk
         /** @var SequenceEnrollmentResponse */
         return $this->connector
             ->send(new EnrollContactInSequenceRequest($sequenceId, $contactId, $senderEmail, $userId))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Search any CRM object type using filter groups (CRM Search API).
+     *
+     * Accepts object type names (`contacts`) or custom object type IDs
+     * (`2-61391055`). The Search API caps at 10,000 results per query;
+     * sort by `hs_object_id` ascending and re-seed with an
+     * `hs_object_id GT {last}` filter to page past the cap.
+     *
+     * @param  list<array<string, mixed>>  $filterGroups
+     * @param  list<string>|null  $properties
+     * @param  list<array<string, string>>|null  $sorts
+     */
+    public function searchObjects(
+        string $objectTypeId,
+        array $filterGroups = [],
+        ?array $properties = null,
+        ?int $limit = null,
+        ?string $after = null,
+        ?array $sorts = null,
+    ): SearchObjectsResponse {
+        /** @var SearchObjectsResponse */
+        return $this->connector
+            ->send(new SearchObjectsRequest($objectTypeId, $filterGroups, $properties, $limit, $after, $sorts))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Enumerate property definitions for any CRM object type, including
+     * custom objects addressed by object type ID (e.g. `2-61391055`).
+     *
+     * @param  'highly_sensitive'|'non_sensitive'|'sensitive'|null  $dataSensitivity
+     */
+    public function listObjectProperties(
+        string $objectTypeId,
+        ?bool $archived = null,
+        ?bool $includeHidden = null,
+        ?string $dataSensitivity = null,
+        ?string $locale = null,
+        ?string $properties = null,
+    ): ListObjectPropertiesResponse {
+        /** @var ListObjectPropertiesResponse */
+        return $this->connector
+            ->send(new ListObjectPropertiesRequest($objectTypeId, $archived, $includeHidden, $dataSensitivity, $locale, $properties))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Read associations from up to 100 objects to a target object type in
+     * one call (v4 Associations API).
+     *
+     * @param  list<string>  $objectIds
+     */
+    public function batchReadAssociations(
+        string $fromObjectType,
+        string $toObjectType,
+        array $objectIds,
+    ): BatchAssociationsResponse {
+        /** @var BatchAssociationsResponse */
+        return $this->connector
+            ->send(new BatchReadAssociationsRequest($fromObjectType, $toObjectType, $objectIds))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Read up to 100 records of any CRM object type by ID in one call.
+     *
+     * IDs the portal doesn't know (deleted, merged away) are silently
+     * omitted from the results — diff `resultIds()` against the requested
+     * IDs to detect them. Pass `archived: true` to read archived records.
+     *
+     * @param  list<string>  $ids
+     * @param  list<string>|null  $properties
+     */
+    public function batchReadObjects(
+        string $objectTypeId,
+        array $ids,
+        ?array $properties = null,
+        ?bool $archived = null,
+    ): BatchObjectsResponse {
+        /** @var BatchObjectsResponse */
+        return $this->connector
+            ->send(new BatchReadObjectsRequest($objectTypeId, $ids, $properties, $archived))
             ->dtoOrFail();
     }
 }

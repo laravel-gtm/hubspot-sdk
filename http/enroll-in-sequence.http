@@ -1,0 +1,8 @@
+POST https://api.hubapi.com/automation/sequences/2026-03/enrollments?userId=90257244
+Authorization: Bearer {{HUBSPOT_API_KEY}}
+Content-Type: application/json
+{
+    "contactId": "214530064485",
+    "senderEmail": "ethan@laravel.com",
+    "sequenceId": "304693506"
+}

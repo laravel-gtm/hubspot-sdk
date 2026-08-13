@@ -7,11 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.16] - 2026-08-13
+
+### Added
+- `searchObjects()` endpoint for searching any CRM object type — including custom objects addressed by object type ID (e.g. `2-61391055`) — with filter groups, sorts, and pagination
+- `listObjectProperties()` endpoint for enumerating property definitions of any CRM object type, with `includeHidden` support for calculated/admin-hidden properties
+- `batchReadObjects()` endpoint for reading up to 100 records of any CRM object type by ID in one call, with an `archived` flag and `resultIds()` for deletion diffing
+- `batchReadAssociations()` endpoint for the v4 associations batch read (up to 100 `from` IDs per call), with `toIdsByFromId()` for join maps
+- `CrmObject`, `SearchObjectsResponse`, `ListObjectPropertiesResponse`, `BatchObjectsResponse`, `BatchAssociationsResponse`, `AssociationBatchResult`, and `AssociationTarget` DTOs
+
+## [0.0.15] - 2026-07-17
+
+### Added
+- `setPrimaryCompanyAssociation()`, `getContactCompanyAssociations()`, and `demotePrimaryCompanyAssociation()` endpoints for managing a contact's primary company (v4 Associations API)
+- `AssociationType`, `ContactCompanyAssociation`, and `ContactCompanyAssociationsResponse` DTOs
+
+## [0.0.14] - 2026-07-16
+
+### Added
+- `associateContactWithCompany()` endpoint using HubSpot's default (unlabeled) v4 association
+- `AssociationResult` DTO
+
+### Changed
+- Create requests are no longer retried, so a transient failure can't produce duplicate records
+
+## [0.0.13] - 2026-07-13
+
 ### Added
 - `createContact()` endpoint for creating a new contact (POST)
 - `createCompany()` endpoint for creating a new company (POST)
 - `updateCompany()` endpoint for updating company properties (PATCH)
 - `onUnauthorized()` hook on `HubspotConnector` (and `HubspotSdk`) invoked with the response whenever a request fails with a 401, before the exception propagates — useful for alerting on expired or revoked OAuth tokens
+
+## [0.0.12] - 2026-07-13
+
+### Changed
+- Dependency bumps
 
 ## [0.0.11] - 2026-04-21
 
@@ -87,7 +118,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Deal`, `ListDealsResponse`, and `Paging` response DTOs
 - Laravel service provider with config publishing (`hubspot-sdk-config`)
 
-[Unreleased]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.11...HEAD
+[Unreleased]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.16...HEAD
+[0.0.16]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.15...v0.0.16
+[0.0.15]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.14...v0.0.15
+[0.0.14]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.13...v0.0.14
+[0.0.13]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.12...v0.0.13
+[0.0.12]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.8...v0.0.9

@@ -1,0 +1,19 @@
+POST https://api.hubapi.com/crm/v3/objects/users/search
+Authorization: Bearer {{HUBSPOT_API_KEY}}
+Content-Type: application/json
+{
+    // "filterGroups": [
+    //     {
+    //         "filters": [
+    //             {
+    //                 "propertyName": "email",
+    //                 "operator": "EQ",
+    //                 "value": "ethan@laravel.com"
+    //             }
+    //         ]
+    //     }
+    // ],
+    "properties": [
+        "*"
+    ]
+}

@@ -1,0 +1,5 @@
+GET https://api.hubapi.com/crm/objects/2026-03/leads
+Authorization: Bearer {{HUBSPOT_API_KEY}}
+Content-Type: application/json
+{
+}

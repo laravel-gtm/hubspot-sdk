@@ -11,9 +11,17 @@ A Laravel-ready PHP SDK for the HubSpot CRM API, built with [Saloon](https://doc
 
 | SDK Method | HTTP | API Endpoint | Since |
 |-----------|------|-------------|-------|
-| `createContact()` | POST | `/crm/v3/objects/contacts` | unreleased |
-| `createCompany()` | POST | `/crm/v3/objects/companies` | unreleased |
-| `updateCompany()` | PATCH | `/crm/v3/objects/companies/{companyId}` | unreleased |
+| `searchObjects()` | POST | `/crm/v3/objects/{objectTypeId}/search` | v0.0.16 |
+| `listObjectProperties()` | GET | `/crm/v3/properties/{objectTypeId}` | v0.0.16 |
+| `batchReadObjects()` | POST | `/crm/v3/objects/{objectTypeId}/batch/read` | v0.0.16 |
+| `batchReadAssociations()` | POST | `/crm/v4/associations/{fromType}/{toType}/batch/read` | v0.0.16 |
+| `createContact()` | POST | `/crm/v3/objects/contacts` | v0.0.13 |
+| `createCompany()` | POST | `/crm/v3/objects/companies` | v0.0.13 |
+| `updateCompany()` | PATCH | `/crm/v3/objects/companies/{companyId}` | v0.0.13 |
+| `associateContactWithCompany()` | PUT | `/crm/v4/objects/contacts/{contactId}/associations/default/companies/{companyId}` | v0.0.14 |
+| `getContactCompanyAssociations()` | GET | `/crm/v4/objects/contacts/{contactId}/associations/companies` | v0.0.15 |
+| `setPrimaryCompanyAssociation()` | PUT | `/crm/v4/objects/contacts/{contactId}/associations/companies/{companyId}` | v0.0.15 |
+| `demotePrimaryCompanyAssociation()` | POST | `/crm/v4/associations/contacts/companies/batch/labels/archive` | v0.0.15 |
 | `getContact()` | GET | `/crm/v3/objects/contacts/{contactId}` | v0.0.6 |
 | `listContacts()` | GET | `/crm/v3/objects/contacts` | v0.0.6 |
 | `listContactProperties()` | GET | `/crm/v3/properties/contact` | v0.0.6 |

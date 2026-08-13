@@ -1,2 +1,2 @@
-GET https://api.hubapi.com/crm/v3/owners/87644597
+GET https://api.hubapi.com/crm/v3/owners/90257244
 Authorization: Bearer {{HUBSPOT_API_KEY}}

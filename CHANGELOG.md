@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `HubspotConnector` now sleeps (delays + retries) instead of throwing `RateLimitReachedException` when the burst limit or HubSpot's own 429 response is hit. The connector is typically bound as a container singleton over a shared, cache-backed rate limit store, so one caller's burst was tripping a hard failure for every other concurrent caller sharing that store. The daily limit intentionally still throws rather than sleeps, since blocking a queue worker for up to 24 hours would be worse than failing fast.
+
 ## [0.0.16] - 2026-08-13
 
 ### Added

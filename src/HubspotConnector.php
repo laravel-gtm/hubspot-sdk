@@ -94,12 +94,22 @@ class HubspotConnector extends Connector
     }
 
     /**
+     * The burst limit sleeps: this connector is typically bound as a
+     * container singleton over a shared (cache-backed) rate limit store, so
+     * one caller's burst can trip the limit for every other concurrent
+     * caller. Without sleep(), Saloon throws RateLimitReachedException
+     * immediately instead of retrying, which turns a brief, shared 10-second
+     * throttle into a hard failure for whichever request happens to be
+     * unlucky. The daily limit deliberately does NOT sleep — its window is a
+     * full day, and blocking a queue worker for up to 24 hours is worse than
+     * failing fast.
+     *
      * @return array<int, Limit>
      */
     protected function resolveLimits(): array
     {
         return [
-            Limit::allow($this->burstLimit)->everySeconds(10)->name('burst'),
+            Limit::allow($this->burstLimit)->everySeconds(10)->name('burst')->sleep(),
             Limit::allow($this->dailyLimit)->everyDay()->name('daily'),
         ];
     }
@@ -107,6 +117,15 @@ class HubspotConnector extends Connector
     protected function resolveRateLimitStore(): RateLimitStore
     {
         return $this->customRateLimitStore ?? new MemoryStore;
+    }
+
+    /**
+     * Sleep (delay + retry) instead of throwing when HubSpot itself returns a
+     * 429, for the same shared-store reason as the burst limit above.
+     */
+    protected function getTooManyAttemptsLimiter(): ?Limit
+    {
+        return Limit::custom($this->handleTooManyAttempts(...))->sleep();
     }
 
     protected function handleTooManyAttempts(Response $response, Limit $limit): void

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# This SDK uses mocked HTTP requests and needs no services or authentication.
+# Toolchains and Composer dependencies are restored from the setup snapshot.
+echo 'HubSpot SDK ready; no resume repairs needed.'

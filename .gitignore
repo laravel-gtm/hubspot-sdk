@@ -36,3 +36,4 @@ auth.json
 .vscode/
 coverage/
 *.log
+.amp/portals/*

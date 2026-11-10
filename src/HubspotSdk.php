@@ -34,6 +34,7 @@ use LaravelGtm\HubspotSdk\Requests\SearchObjectsRequest;
 use LaravelGtm\HubspotSdk\Requests\SetPrimaryCompanyAssociationRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateCompanyRequest;
 use LaravelGtm\HubspotSdk\Requests\UpdateContactRequest;
+use LaravelGtm\HubspotSdk\Requests\UpdateDealRequest;
 use LaravelGtm\HubspotSdk\Responses\AssociationListResponse;
 use LaravelGtm\HubspotSdk\Responses\AssociationResult;
 use LaravelGtm\HubspotSdk\Responses\BatchAssociationsResponse;
@@ -219,6 +220,24 @@ class HubspotSdk
         /** @var GetDealResponse */
         return $this->connector
             ->send(new GetDealRequest($dealId, $properties, $propertiesWithHistory, $associations, $archived))
+            ->dtoOrFail();
+    }
+
+    /**
+     * Update properties on a HubSpot deal (PATCH).
+     *
+     * Only the properties provided are modified; others are untouched. Values
+     * are sent exactly as given — enumeration values are case-sensitive in
+     * HubSpot, so they are never normalized. Returns the updated deal as a
+     * GetDealResponse.
+     *
+     * @param  array<string, string|int|float|bool|null>  $properties
+     */
+    public function updateDeal(string $dealId, array $properties): GetDealResponse
+    {
+        /** @var GetDealResponse */
+        return $this->connector
+            ->send(new UpdateDealRequest($dealId, $properties))
             ->dtoOrFail();
     }
 

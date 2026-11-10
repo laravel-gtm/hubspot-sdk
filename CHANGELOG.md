@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.18] - 2026-11-10
+
+### Added
+- `updateDeal()` endpoint for updating deal properties (PATCH), returning the updated deal as a `GetDealResponse`. Property values are sent exactly as given, so case-sensitive enumeration values such as `hs_manual_forecast_category` = `Forecast` are never normalized
+
+## [0.0.17] - 2026-08-17
+
 ### Fixed
 - `HubspotConnector` now sleeps (delays + retries) instead of throwing `RateLimitReachedException` when the burst limit or HubSpot's own 429 response is hit. The connector is typically bound as a container singleton over a shared, cache-backed rate limit store, so one caller's burst was tripping a hard failure for every other concurrent caller sharing that store. The daily limit intentionally still throws rather than sleeps, since blocking a queue worker for up to 24 hours would be worse than failing fast.
 
@@ -121,7 +128,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Deal`, `ListDealsResponse`, and `Paging` response DTOs
 - Laravel service provider with config publishing (`hubspot-sdk-config`)
 
-[Unreleased]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.16...HEAD
+[Unreleased]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.18...HEAD
+[0.0.18]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.17...v0.0.18
+[0.0.17]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.16...v0.0.17
 [0.0.16]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/laravel-gtm/hubspot-sdk/compare/v0.0.13...v0.0.14

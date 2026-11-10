@@ -11,6 +11,7 @@ A Laravel-ready PHP SDK for the HubSpot CRM API, built with [Saloon](https://doc
 
 | SDK Method | HTTP | API Endpoint | Since |
 |-----------|------|-------------|-------|
+| `updateDeal()` | PATCH | `/crm/v3/objects/deals/{dealId}` | v0.0.18 |
 | `searchObjects()` | POST | `/crm/v3/objects/{objectTypeId}/search` | v0.0.16 |
 | `listObjectProperties()` | GET | `/crm/v3/properties/{objectTypeId}` | v0.0.16 |
 | `batchReadObjects()` | POST | `/crm/v3/objects/{objectTypeId}/batch/read` | v0.0.16 |
